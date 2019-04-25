@@ -65,6 +65,51 @@ public class OpenAPIV3ParserTest {
     protected int serverPort = getDynamicPort();
     protected WireMockServer wireMockServer;
 
+    @Test
+    public void testIssue1071() {
+
+        ParseOptions options = new ParseOptions();
+        options.setResolve(true);
+
+        SwaggerParseResult parseResult = new OpenAPIV3Parser().readLocation("issue-1071.yaml", null, options);
+        OpenAPI apispec = parseResult.getOpenAPI();
+        assertNotNull(apispec);
+        Schema test = apispec.getPaths().get("/mapschema").getGet().getResponses().get("200").getContent().get("application/json").getSchema();
+        assertTrue(test instanceof MapSchema);
+
+    }
+
+    @Test
+    public void testIssue1071True() {
+
+        ParseOptions options = new ParseOptions();
+        options.setResolve(true);
+
+        SwaggerParseResult parseResult = new OpenAPIV3Parser().readLocation("issue-1071-true.yaml", null, options);
+        OpenAPI apispec = parseResult.getOpenAPI();
+        assertNotNull(apispec);
+        Schema test = apispec.getPaths().get("/mapschema").getGet().getResponses().get("200").getContent().get("application/json").getSchema();
+        assertTrue(test instanceof MapSchema);
+        assertTrue(test.getAdditionalProperties() instanceof Boolean);
+        assertTrue((Boolean)test.getAdditionalProperties());
+
+    }
+
+    @Test
+    public void testIssue1071False() {
+
+        ParseOptions options = new ParseOptions();
+        options.setResolve(true);
+
+        SwaggerParseResult parseResult = new OpenAPIV3Parser().readLocation("issue-1071-false.yaml", null, options);
+        OpenAPI apispec = parseResult.getOpenAPI();
+        assertNotNull(apispec);
+        Schema test = apispec.getPaths().get("/mapschema").getGet().getResponses().get("200").getContent().get("application/json").getSchema();
+        assertTrue(test instanceof ObjectSchema);
+        assertTrue(test.getAdditionalProperties() instanceof Boolean);
+        assertFalse((Boolean)test.getAdditionalProperties());
+
+    }
 
     @Test
     public void testIssue1039() {
@@ -76,7 +121,7 @@ public class OpenAPIV3ParserTest {
         OpenAPI apispec = parseResult.getOpenAPI();
         assertNotNull(apispec);
         assertEquals(apispec.getPaths().get("/pets").getGet().getParameters().get(0).getSchema().getType(),"array");
-        
+
     }
 
     @Test
@@ -1861,6 +1906,26 @@ public class OpenAPIV3ParserTest {
         assertThat(parameters.get("IdParam").getName(), equalTo("id"));
         assertThat(parameters.get("NameParam").getName(), equalTo("name"));
         
+        assertThat(result.getMessages(), equalTo(emptyList()));
+
+    }
+
+    @Test
+    public void testIssue1063() {
+        // given
+        String location = "src/test/resources/issue-1063/openapi.yaml";
+        ParseOptions options = new ParseOptions();
+        options.setResolve(true);
+        OpenAPIV3Parser tested = new OpenAPIV3Parser();
+
+        // when
+        SwaggerParseResult result = tested.readLocation(location, emptyList(), options);
+
+        // then
+        OpenAPI api = result.getOpenAPI();
+        assertEquals(api.getPaths().get("/anPath").getGet().getParameters().get(0).getName(), "customer-id");
+        assertEquals(api.getPaths().get("/anPath").getGet().getParameters().get(1).getName(), "unit-id");
+
         assertThat(result.getMessages(), equalTo(emptyList()));
 
     }
