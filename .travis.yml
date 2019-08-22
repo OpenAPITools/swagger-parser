@@ -1,12 +1,13 @@
 sudo: false
 language: java
 script: mvn verify
+dist: xenial
 jdk:
-  - oraclejdk8
-  - oraclejdk9
+  - openjdk8
+  - openjdk11
 jobs:
   include:
     - stage: deploy
       if: env(OPENAPITOOLS_SONATYPE_USERNAME) IS present AND type IN (push, api) AND branch IN (2.0-OpenAPITools) AND tag IS blank
-      jdk: oraclejdk8
+      jdk: openjdk8
       script: mvn clean deploy --settings .travis/settings.xml
