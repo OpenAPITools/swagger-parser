@@ -3,6 +3,7 @@ package io.swagger.parser;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.media.ArraySchema;
+import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.PathItem;
 
@@ -124,13 +125,13 @@ public class OpenAPIParserTest {
 
     @Test
     public void test30Url() {
-        String location = "http://petstore.swagger.io/v2/swagger.json";
+        String location = "https://raw.githubusercontent.com/OAI/OpenAPI-Specification/master/examples/v3.0/petstore.yaml";
 
         SwaggerParseResult result = new OpenAPIParser().readLocation(location, null, null);
 
         assertNotNull(result);
         assertNotNull(result.getOpenAPI());
-        assertEquals(result.getOpenAPI().getOpenapi(), "3.0.1");
+        assertEquals(result.getOpenAPI().getOpenapi(), "3.0.0");
     }
 
     @Test
@@ -537,6 +538,17 @@ public class OpenAPIParserTest {
             Thread.currentThread().setContextClassLoader(tccl);
         }
         assertNotNull(api);
+    }
+
+    @Test
+    public void testIssue1086() {
+        OpenAPIParser openApiParser = new OpenAPIParser();
+        ParseOptions options = new ParseOptions();
+        OpenAPI openAPI = openApiParser.readLocation("issue1086.yaml", null, options).getOpenAPI();
+        Map<String, Schema> schemas = openAPI.getComponents().getSchemas();
+        ObjectSchema schema = (ObjectSchema) schemas.get("AssessCandidate").getProperties().get("test_results");
+        Schema score = schema.getProperties().get("score");
+        assertEquals(score.getMultipleOf().intValue(), 1);
     }
   
 }
